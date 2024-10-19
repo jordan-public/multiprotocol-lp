@@ -44,9 +44,35 @@ in the same manner the ZK constraint circuit can represent elaborate calculation
 
 The implementation is running on multiple EVMs and it is written in Solidity. The sample ZK component’s prover is written in Aztec Noir. The Smart Contract that represents the multi-protocol LP is generic, and various protocols can be added as long as they implement our specific interface for creation, deposit/withdrawal and transactions. I also implemented the sample concentrated liquidity swap pool, lending pool and constant-sum ZK swap pool. The latter is the simplest example of ZK pool, but in reality, more complicated protocols can be implemented in this manner in order to save on gas by calculating the constraints off-chain.
 
+## Examples implemented
+
+### Greatly simplified concentrated liquidity pool
+
+I implement a concentrated liquidity pool by simply having constant product constraint on the virtual assets.
+In addition the changes of the real assets enforce changes in the virtual assets.
+As the real assets are much less available, the liquidity is concentrated.
+When the accounting demands a payout to the next LP in the route,
+if the desired asset is not available in the required quantity, the constraint reverts,
+thus enforcing the concentrated liquidity. 
+
+This implementation is much simpler than the Uniswap V3 and V4 concentrated liquidity pools,
+and they use V2 arithmetic instead of tick math.
+
+### Lending pool
+
+The lending pool creates records for each position and makes sure
+each participant is treated separately. The collateralization constraint
+uses an oracle. As my choice of oracle, Chronicle is nor available on
+all chains where this is deployed, it is stubbed out until it becomes available 
+in the corresponding blockchains.
+
+### Constant sum Swap pool
+
+Just to show the ZK pattern, I implement the constant sum constraint
+as a ZK prover in Aztec Noir. The auto-generated verifier is used to check 
+the constraint.
+
 ## Benefits
-
-
 
 ### Isolation of assets
 
@@ -55,6 +81,19 @@ it does not allow one LP to affect the other LPs. LPs can be governed
 by protocols that can potentially go bankrupt, for example lending protocols that
 do not implement timely liquidations. If such LP goes bankrupt, the other LPs
 will not be affected.
+
+### Network cost savings
+
+As asset transfers require calls out to token contracts, they 
+are relatively expensive. When one LP sends assets to the next LP
+in the route, the total sum of assets remains unchanged, and only 
+ownership accounting needs to be updated, thus saving on blockchain network (gas)
+fees.
+
+### Inexpensive and Safe Multi-leg Operations
+
+As the accounting is generic, the routes can compose multi-leg positions
+that are easily and inexpensively managed.
 
 ## Future work
 
@@ -76,3 +115,11 @@ above sequence can be executed multiple times.
 
 The reentrancy guard would play the roll of a lock, if we use the
 terminology of Uniswap V4.
+
+### Multi-leg Risk Enforcement
+
+In the future, instead of just each member protocol having its own
+constraint set, the combined protocol should be able to receive additional
+constraints that govern combined accounting. An example of this would 
+be multi-leg option positions forming safe spreads, even though each
+leg may individually impose greater risk.
