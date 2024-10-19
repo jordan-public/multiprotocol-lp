@@ -11,6 +11,9 @@ contract Multiprotocol is IMultiprotocol {
 
     constructor(IProtocol [] memory _protocols) {
         protocols = _protocols;
+        for (uint256 i = 0; i < protocols.length; i++) {
+            protocols[i].setParent();
+        }
     }
 
     function execute(TRouteStep [] memory steps) external {
@@ -21,13 +24,22 @@ contract Multiprotocol is IMultiprotocol {
             require(step.fromProtocolIndex < protocols.length, "Multiprotocol: INVALID_INDEX");
             require(step.toProtocolIndex < protocols.length, "Multiprotocol: INVALID_INDEX");
             // Either of the two lines below can revert upon underflow as intended
-            protocols[step.fromProtocolIndex].move(step.fromToken, -step.amount);
-            protocols[step.toProtocolIndex].move(step.toToken, step.amount);
-
+            protocols[step.fromProtocolIndex].move(msg.sender, step.fromToken, -step.amount);
+            protocols[step.toProtocolIndex].move(msg.sender, step.toToken, step.amount);
         }
 
         for (uint256 i = 0; i < protocols.length; i++) {
             protocols[i].happy();
         }
+    }
+
+    function transferIn(address from, address token, uint256 amount) external {
+        // To do: check of called by am IProtocol!!!
+        IERC20(token).transferFrom(from, address(this), amount);
+    }
+
+    function transferOut(address to, address token, uint256 amount) external {
+        // To do: check of called by am IProtocol!!!
+        IERC20(token).transfer(to, amount);
     }
 }

@@ -4,10 +4,12 @@ pragma solidity ^0.8.13;
 import "./types/TPool.sol";
 import "./interfaces/IProtocol.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./interfaces/IMultiprotocol.sol";
 
 // Input / Output Protocol used for transferring assets into and out of the Multiprotocol for execution
 contract IOProtocol is IProtocol {
     TPool pool;
+    IMultiprotocol multiprotocol;
 
     constructor (TPool memory _pool) {
         pool = _pool;
@@ -17,26 +19,30 @@ contract IOProtocol is IProtocol {
         require(pool.tokens.length == pool.newAmounts.length, "IOProtocol: INVALID_LENGTH");
     }
 
+    function setParent() external {
+        multiprotocol = IMultiprotocol(msg.sender);
+    }
+
     function token(uint256 index) external view returns (address) {
         require(index < pool.tokens.length, "IOProtocol: INVALID_INDEX");
         return pool.tokens[index];
     }
 
-    function move(uint256 tokenIndex, int256 amount) external  {
-        if (amount >= 0) { // Input
-            pool.newAmounts[tokenIndex] += uint256(amount);
-            IERC20(pool.tokens[tokenIndex]).transferFrom(msg.sender, address(this), uint256(amount));
-        } else { // Output
-            pool.newAmounts[tokenIndex] -= uint256(-amount); // Can revert upon underflow as intended
-            IERC20(pool.tokens[tokenIndex]).transfer(msg.sender, uint256(-amount));
+    function move(address user, uint256 tokenIndex, int256 amount) external  {
+        if (amount < 0) { // Input
+            //pool.newAmounts[tokenIndex] = pool.amounts[tokenIndex] + uint256(-amount);
+            multiprotocol.transferIn(user, pool.tokens[tokenIndex], uint256(-amount));
+        } else if (amount > 0) { // Output
+            //pool.newAmounts[tokenIndex] = pool.amounts[tokenIndex] - uint256(amount); // Can revert upon underflow as intended
+            multiprotocol.transferOut(user, pool.tokens[tokenIndex], uint256(amount));
         }
     }
 
     function happy() external view {
         // Comment below for donation into the Multiprotocol to be potentially used in the next call atomically
-        for (uint256 i = 0; i < pool.tokens.length; i++) {
-            pool.newAmounts[i] == 0; // Consumed
-        }
+        // for (uint256 i = 0; i < pool.tokens.length; i++) {
+        //     pool.newAmounts[i] == 0; // Consumed
+        // }
     }
 
     // Issuing LP tokens is not yet supported (irrelevant for the purpose of this prototype)

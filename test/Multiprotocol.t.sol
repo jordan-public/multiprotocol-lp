@@ -47,15 +47,15 @@ contract MultiprotocolTest is Test {
         uint256 [] memory ra = new uint256[](2);
         ra[0] = 1000 * 10 ** 6; // 1000 USDC
         ra[1] = 1 * 10 ** 18; // 1 WETH
-        USDC.approve(address(protocols[1]), ra[0]);
-        WETH.approve(address(protocols[1]), ra[1]);
-        protocols[1].deposit(ra);
 
         mp = new Multiprotocol(protocols);
+        USDC.approve(address(mp), ra[0]);
+        WETH.approve(address(mp), ra[1]);
+        protocols[1].deposit(ra);
     }
 
     function test_DepositAndSwap() public {
-        USDC.approve(address(mp.protocols(0)), 1000 * 10 ** 6); // Authorize IOProtocol to spend 1000 USDC
+        USDC.approve(address(mp), 1000 * 10 ** 6); // Authorize IOProtocol to spend 1000 USDC
         // Create a route
         TRouteStep [] memory steps = new TRouteStep[](2);
         steps[0].fromProtocolIndex = 0;
@@ -67,8 +67,45 @@ contract MultiprotocolTest is Test {
         steps[1].fromToken = 1;
         steps[1].toProtocolIndex = 0;
         steps[1].toToken = 1;
-        steps[1].amount = 1 * 10 ** 18; // 1 WETH
+        steps[1].amount = 9 * 10 ** 17; //  WETH
         mp.execute(steps);
+    }
+
+    function test_DepositAndSwapCPFail() public {
+        USDC.approve(address(mp), 1000 * 10 ** 6); // Authorize IOProtocol to spend 1000 USDC
+        // Create a route
+        TRouteStep [] memory steps = new TRouteStep[](2);
+        steps[0].fromProtocolIndex = 0;
+        steps[0].fromToken = 0;
+        steps[0].toProtocolIndex = 1;
+        steps[0].toToken = 0;
+        steps[0].amount = 1000 * 10 ** 6; // 1000 USDC
+        steps[1].fromProtocolIndex = 1;
+        steps[1].fromToken = 1;
+        steps[1].toProtocolIndex = 0;
+        steps[1].toToken = 1;
+        steps[1].amount = 1 * 10 ** 18; //  WETH
+        // Should fail because CP protocol does not have enough WETH
+        vm.expectRevert();
+            mp.execute(steps);
+    }
+
+    function test_DepositAndTrySwapBeyondLRange() public {
+        USDC.approve(address(mp), 2000 * 10 ** 6); // Authorize IOProtocol to spend 1000 USDC
+        // Create a route
+        TRouteStep [] memory steps = new TRouteStep[](2);
+        steps[0].fromProtocolIndex = 0;
+        steps[0].fromToken = 0;
+        steps[0].toProtocolIndex = 1;
+        steps[0].toToken = 0;
+        steps[0].amount = 2000 * 10 ** 6; // 1000 USDC
+        steps[1].fromProtocolIndex = 1;
+        steps[1].fromToken = 1;
+        steps[1].toProtocolIndex = 0;
+        steps[1].toToken = 1;
+        steps[1].amount = 19 * 10 ** 17; //  WETH
+        vm.expectRevert();
+            mp.execute(steps);
     }
 
 }
