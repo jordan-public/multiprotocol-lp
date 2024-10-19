@@ -5,19 +5,21 @@ import "forge-std/console.sol";
 import "./types/TPool.sol";
 import "./interfaces/IProtocol.sol";
 import "./interfaces/IMultiprotocol.sol";
+import "./interfaces/IVerifier.sol";
 
-contract CPSwapProtocol is IProtocol {
+contract ZKConstSumSwapProtocol is IProtocol {
     TPool pool;
     IMultiprotocol multiprotocol;
     uint256 [] public virtualAmounts = new uint256[](2);
+    IVerifier public verifier;
 
     constructor (TPool memory _pool, uint256 [] memory _virtualAmounts) {
         pool = _pool;
         pool.protocol = IProtocol(address(this));
-        require(pool.tokens.length == 2, "CPSwapProtocol: INVALID_LENGTH");
-        require(2 == pool.amounts.length, "CPSwapProtocol: INVALID_LENGTH");
-        require(2 == pool.newAmounts.length, "CPSwapProtocol: INVALID_LENGTH");
-        require(2 == virtualAmounts.length, "CPSwapProtocol: INVALID_LENGTH");
+        require(pool.tokens.length == 2, "ZKConstSumSwapProtocol: INVALID_LENGTH");
+        require(2 == pool.amounts.length, "ZKConstSumSwapProtocol: INVALID_LENGTH");
+        require(2 == pool.newAmounts.length, "ZKConstSumSwapProtocol: INVALID_LENGTH");
+        require(2 == virtualAmounts.length, "ZKConstSumSwapProtocol: INVALID_LENGTH");
         virtualAmounts[0] = _virtualAmounts[0];
         virtualAmounts[1] = _virtualAmounts[1];
     }
@@ -27,7 +29,7 @@ contract CPSwapProtocol is IProtocol {
     }
 
     function token(uint256 index) external view override returns (address) {
-        require(index < 2, "CPSwapProtocol: INVALID_INDEX");
+        require(index < 2, "ZKConstSumSwapProtocol: INVALID_INDEX");
         return pool.tokens[index];
     }
 
@@ -38,13 +40,15 @@ contract CPSwapProtocol is IProtocol {
             pool.newAmounts[tokenIndex] = pool.amounts[tokenIndex] - uint256(-amount); // Can revert upon underflow as intended
     }
 
-    function happy(bytes calldata) external override {
-        uint256 oldProduct = virtualAmounts[0] * virtualAmounts[1];
+    function happy(bytes calldata proof) external override {
+        bytes32[] memory publicInputs = new bytes32[](4);
+        publicInputs[0] = bytes32(virtualAmounts[0] + pool.newAmounts[0]);
+        publicInputs[1] = bytes32(virtualAmounts[1] + pool.newAmounts[1]);
+        require(verifier.verify(proof, publicInputs), "ZKConstSumSwapProtocol: CONSTANT_SUM_ZK");
         virtualAmounts[0] += pool.newAmounts[0];
         virtualAmounts[1] += pool.newAmounts[1];
         virtualAmounts[0] -= pool.amounts[0];
         virtualAmounts[1] -= pool.amounts[1];
-        require(oldProduct <= virtualAmounts[0] * virtualAmounts[1], "CPSwapProtocol: CONSTANT_PRODUCT");
         pool.amounts[0] = pool.newAmounts[0];
         pool.amounts[1] = pool.newAmounts[1];
     }
@@ -52,7 +56,7 @@ contract CPSwapProtocol is IProtocol {
     // Issuing LP tokens is not yet supported (irrelevant for the purpose of this prototype)
     function deposit(uint256 [] memory amounts) external override {
         // Todo: Make sure the caller is the IMultiprotocol!!!
-        require(2 == amounts.length, "CPSwapProtocol: INVALID_LENGTH");
+        require(2 == amounts.length, "ZKConstSumSwapProtocol: INVALID_LENGTH");
         pool.amounts[0] += amounts[0];
         pool.amounts[1] += amounts[1];
         virtualAmounts[0] += amounts[0];
@@ -64,7 +68,7 @@ contract CPSwapProtocol is IProtocol {
     // Burning LP tokens is not yet supported (irrelevant for the purpose of this prototype)
     function withdraw(uint256 [] memory amounts) external override {
         // Todo: Make sure the caller is the IMultiprotocol!!!
-        require(2 == amounts.length, "CPSwapProtocol: INVALID_LENGTH");
+        require(2 == amounts.length, "ZKConstSumSwapProtocol: INVALID_LENGTH");
         pool.amounts[0] -= amounts[0];
         pool.amounts[1] -= amounts[1];
         virtualAmounts[0] -= amounts[0];

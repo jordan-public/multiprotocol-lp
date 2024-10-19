@@ -6,7 +6,7 @@ pragma solidity ^0.8.13;
 interface IProtocol {
     function setParent() external;
     function token(uint256 index) external view returns (address);
-    function happy() external;
+    function happy(bytes calldata proof) external;
     function move(address user, uint256 tokenIndex, int256 amount) external;
     function deposit(uint256 [] memory amounts) external;
     function withdraw(uint256 [] memory amounts) external;

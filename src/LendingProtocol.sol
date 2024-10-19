@@ -5,21 +5,30 @@ import "forge-std/console.sol";
 import "./types/TPool.sol";
 import "./interfaces/IProtocol.sol";
 import "./interfaces/IMultiprotocol.sol";
+import "./interfaces/IOracle.sol";
+import "./MockOracle.sol";
 
-contract CPSwapProtocol is IProtocol {
+// Todo: Implement loan liquidations!!!
+contract LendingProtocol is IProtocol {
     TPool pool;
     IMultiprotocol multiprotocol;
-    uint256 [] public virtualAmounts = new uint256[](2);
+    IOracle oracle;
 
-    constructor (TPool memory _pool, uint256 [] memory _virtualAmounts) {
+    uint256 MIN_COLLATERAL_RATIO = 15 * 10 ** 17;
+
+    struct TLoan {
+        uint256 collateral;
+        uint256 loan;
+    }   
+    mapping (address => TLoan) loans; // borrower -> TLoan
+
+    constructor (TPool memory _pool) {
         pool = _pool;
         pool.protocol = IProtocol(address(this));
-        require(pool.tokens.length == 2, "CPSwapProtocol: INVALID_LENGTH");
-        require(2 == pool.amounts.length, "CPSwapProtocol: INVALID_LENGTH");
-        require(2 == pool.newAmounts.length, "CPSwapProtocol: INVALID_LENGTH");
-        require(2 == virtualAmounts.length, "CPSwapProtocol: INVALID_LENGTH");
-        virtualAmounts[0] = _virtualAmounts[0];
-        virtualAmounts[1] = _virtualAmounts[1];
+        require(pool.tokens.length == 2, "LendingProtocol: INVALID_LENGTH");
+        require(2 == pool.amounts.length, "LendingProtocol: INVALID_LENGTH");
+        require(2 == pool.newAmounts.length, "LendingProtocol: INVALID_LENGTH");
+        oracle = new MockOracle();
     }
 
     function setParent() external {
@@ -27,7 +36,7 @@ contract CPSwapProtocol is IProtocol {
     }
 
     function token(uint256 index) external view override returns (address) {
-        require(index < 2, "CPSwapProtocol: INVALID_INDEX");
+        require(index < 2, "LendingProtocol: INVALID_INDEX");
         return pool.tokens[index];
     }
 
@@ -39,12 +48,9 @@ contract CPSwapProtocol is IProtocol {
     }
 
     function happy(bytes calldata) external override {
-        uint256 oldProduct = virtualAmounts[0] * virtualAmounts[1];
-        virtualAmounts[0] += pool.newAmounts[0];
-        virtualAmounts[1] += pool.newAmounts[1];
-        virtualAmounts[0] -= pool.amounts[0];
-        virtualAmounts[1] -= pool.amounts[1];
-        require(oldProduct <= virtualAmounts[0] * virtualAmounts[1], "CPSwapProtocol: CONSTANT_PRODUCT");
+        loans[tx.origin].collateral += pool.newAmounts[0];
+        loans[tx.origin].loan += pool.newAmounts[1];
+        require(loans[tx.origin].collateral >= loans[tx.origin].loan * oracle.getPrice() * 10 ** 18 / 10 * 6 * MIN_COLLATERAL_RATIO / 10 ** 18, "LendingPool: UNDERCOLLATERALIZED");
         pool.amounts[0] = pool.newAmounts[0];
         pool.amounts[1] = pool.newAmounts[1];
     }
@@ -52,11 +58,9 @@ contract CPSwapProtocol is IProtocol {
     // Issuing LP tokens is not yet supported (irrelevant for the purpose of this prototype)
     function deposit(uint256 [] memory amounts) external override {
         // Todo: Make sure the caller is the IMultiprotocol!!!
-        require(2 == amounts.length, "CPSwapProtocol: INVALID_LENGTH");
+        require(2 == amounts.length, "LendingProtocol: INVALID_LENGTH");
         pool.amounts[0] += amounts[0];
         pool.amounts[1] += amounts[1];
-        virtualAmounts[0] += amounts[0];
-        virtualAmounts[1] += amounts[1];
         multiprotocol.transferIn(msg.sender, pool.tokens[0], amounts[0]);
         multiprotocol.transferIn(msg.sender, pool.tokens[1], amounts[1]);
     }
@@ -64,11 +68,9 @@ contract CPSwapProtocol is IProtocol {
     // Burning LP tokens is not yet supported (irrelevant for the purpose of this prototype)
     function withdraw(uint256 [] memory amounts) external override {
         // Todo: Make sure the caller is the IMultiprotocol!!!
-        require(2 == amounts.length, "CPSwapProtocol: INVALID_LENGTH");
+        require(2 == amounts.length, "LendingProtocol: INVALID_LENGTH");
         pool.amounts[0] -= amounts[0];
         pool.amounts[1] -= amounts[1];
-        virtualAmounts[0] -= amounts[0];
-        virtualAmounts[1] -= amounts[1];
         multiprotocol.transferOut(msg.sender, pool.tokens[0], amounts[0]);
         multiprotocol.transferOut(msg.sender, pool.tokens[1], amounts[1]);
     }

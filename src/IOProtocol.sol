@@ -38,7 +38,7 @@ contract IOProtocol is IProtocol {
         }
     }
 
-    function happy() external view {
+    function happy(bytes calldata) external view {
         // Comment below for donation into the Multiprotocol to be potentially used in the next call atomically
         // for (uint256 i = 0; i < pool.tokens.length; i++) {
         //     pool.newAmounts[i] == 0; // Consumed

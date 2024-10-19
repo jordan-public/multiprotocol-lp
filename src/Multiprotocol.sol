@@ -29,7 +29,7 @@ contract Multiprotocol is IMultiprotocol {
         }
 
         for (uint256 i = 0; i < protocols.length; i++) {
-            protocols[i].happy();
+            protocols[i].happy("");
         }
     }
 
