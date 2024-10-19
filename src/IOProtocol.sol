@@ -32,11 +32,11 @@ contract IOProtocol is IProtocol {
         }
     }
 
-    function happy() external {
-        // Comment below - donation into the Multiprotocol to be potentially used in the next call atomically
-        // for (uint256 i = 0; i < pool.tokens.length; i++) {
-        //     pool.newAmounts[i] == 0; // Consumed
-        // }
+    function happy() external view {
+        // Comment below for donation into the Multiprotocol to be potentially used in the next call atomically
+        for (uint256 i = 0; i < pool.tokens.length; i++) {
+            pool.newAmounts[i] == 0; // Consumed
+        }
     }
 
     // Issuing LP tokens is not yet supported (irrelevant for the purpose of this prototype)

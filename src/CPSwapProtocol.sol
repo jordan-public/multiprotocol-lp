@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.13;
 
+import "forge-std/console.sol";
 import "./types/TPool.sol";
 import "./interfaces/IProtocol.sol";
 
 contract CPSwapProtocol is IProtocol {
     TPool pool;
-    uint256 [] public virtualAmounts;
+    uint256 [] public virtualAmounts = new uint256[](2);
 
     constructor (TPool memory _pool, uint256 [] memory _virtualAmounts) {
         pool = _pool;
