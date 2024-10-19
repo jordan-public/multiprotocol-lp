@@ -1,5 +1,5 @@
 # multiprotocol-lp
-Multiprotocol Liquidity Pools
+Multi-protocol Liquidity Pools
 
 ## Demo
 

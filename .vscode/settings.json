@@ -1,4 +1,9 @@
 {
   "solidity.packageDefaultDependenciesContractsDirectory": "src",
-  "solidity.packageDefaultDependenciesDirectory": "lib"
+  "solidity.packageDefaultDependenciesDirectory": "lib",
+  "cSpell.words": [
+    "EVMs",
+    "overcollateralization",
+    "reentrancy"
+  ]
 }
