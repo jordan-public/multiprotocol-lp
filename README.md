@@ -44,7 +44,23 @@ in the same manner the ZK constraint circuit can represent elaborate calculation
 
 The implementation is running on multiple EVMs and it is written in Solidity. The sample ZK component’s prover is written in Aztec Noir. The Smart Contract that represents the multi-protocol LP is generic, and various protocols can be added as long as they implement our specific interface for creation, deposit/withdrawal and transactions. I also implemented the sample concentrated liquidity swap pool, lending pool and constant-sum ZK swap pool. The latter is the simplest example of ZK pool, but in reality, more complicated protocols can be implemented in this manner in order to save on gas by calculating the constraints off-chain.
 
-## Examples implemented
+The execution call sequence consists of:
+1. setting up a route.
+2. calling ```execute(route)```.
+
+```execute(route)``` in turn:
+1. performs the asset transfers, real for input and output funds, and just accounting for inter-LP transfers.
+2. At the end, it loops through each LP present in the route and calls ```happy()``` for each LP. This checks the constraints and reverts if they are not met.
+
+### Multiple asset transfers per member protocol
+
+Instead of having an input and an output, each member protocol can deal with multiple assets and have multiple inputs and outputs, thus turning the Route into a Directed Acyclic Graph (DAG). This provides a more general functionality for multi-asset protocols:
+![mplpdag](./img/mplpdag.png) 
+
+This was implemented via a special Input/Output member protocol, which acts as any other protocol but only transfers
+the actual assets in and out.
+
+## Examples member protocols implemented
 
 ### Greatly simplified concentrated liquidity pool
 
@@ -53,7 +69,8 @@ In addition the changes of the real assets enforce changes in the virtual assets
 As the real assets are much less available, the liquidity is concentrated.
 When the accounting demands a payout to the next LP in the route,
 if the desired asset is not available in the required quantity, the constraint reverts,
-thus enforcing the concentrated liquidity. 
+thus enforcing the concentrated liquidity:
+![clpcp](./img/clpcp.png)
 
 This implementation is much simpler than the Uniswap V3 and V4 concentrated liquidity pools,
 and they use V2 arithmetic instead of tick math.
@@ -96,11 +113,6 @@ As the accounting is generic, the routes can compose multi-leg positions
 that are easily and inexpensively managed.
 
 ## Future work
-
-### Multiple asset transfers per member protocol
-
-Instead of having an input and an output, each member protocol can deal with multiple assets and have multiple inputs and outputs, thus turning the Route into a Directed Acyclic Graph (DAG). This would provide a more general functionality for multi-asset protocols:
-![mplpdag](./img/mplpdag.png) 
 
 ### Flash Loans and Hooks
 
