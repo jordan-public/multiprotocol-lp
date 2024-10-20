@@ -8,7 +8,7 @@ Deployment addressess:
 - Unichain Sepolia: 0x38288e03211FD049d9A10eC72333d121EBDa8178
 - AirDAO Ambrosis Testnet: backend: failed while inspecting
 - Scale: Invalid transaction nonce.
-- Hadera: 
+- Hadera: 0xB12b792AccD473F9C4A35787eEcd46529249D0cb
 - NeonEVM: Transaction Failure: 0xfdcf36c600e9976dfa37dc1c64ec1e8a5ba88176511a97060a24eb9aa4a8ce19
 - Rootstock: Failed to deploy script: backend: failed while inspecting
 - Zircuit: 0x38288e03211FD049d9A10eC72333d121EBDa8178
