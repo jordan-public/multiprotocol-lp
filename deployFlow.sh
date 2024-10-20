@@ -6,4 +6,4 @@
 source .env
 
 # To deploy and verify our contract
-forge script script/Multiprotocol.s.sol:Deploy --rpc-url "https://testnet.evm.nodes.onflow.org" --sender $SENDER --private-key $PRIVATE_KEY --broadcast -vvvv
+forge script script/Multiprotocol.s.sol:Deploy --slow --rpc-url "https://testnet.evm.nodes.onflow.org" --sender $SENDER --private-key $PRIVATE_KEY --broadcast -vvvv
