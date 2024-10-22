@@ -1,3 +1,13 @@
+[This project, (Uneedswap V5)](https://ethglobal.com/showcase/uneedswap-v5-jn1hx) won the following prizes at the [ETHGlobal San Francisco 2024](https://ethglobal.com/events/sanfrancisco2024) hackathon:
+
+🏆 [Hedera - EVM Starter Bounty](https://ethglobal.com/showcase/uneedswap-v5-jn1hx">)
+
+🥈 [Uniswap Foundation - Unichain 2nd place](https://ethglobal.com/showcase/uneedswap-v5-jn1hx)
+
+🥈 [Polygon - Best zk App on Polygon 2nd place](https://ethglobal.com/showcase/uneedswap-v5-jn1hx)
+
+[SKALE Network - Best Use of Zero Gas Fees 4th place](https://ethglobal.com/showcase/uneedswap-v5-jn1hx)
+
 # multiprotocol-lp
 Multi-protocol Liquidity Pools
 
