@@ -2,8 +2,6 @@
 
 🏆 [Hedera - EVM Starter Bounty](https://ethglobal.com/showcase/uneedswap-v5-jn1hx">)
 
-🏆 [Zircuit - Best Zircuit Integration](https://ethglobal.com/showcase/uneedswap-v5-jn1hx)
-
 🥈 [Uniswap Foundation - Unichain 2nd place](https://ethglobal.com/showcase/uneedswap-v5-jn1hx)
 
 🥈 [Polygon - Best zk App on Polygon 2nd place](https://ethglobal.com/showcase/uneedswap-v5-jn1hx)
