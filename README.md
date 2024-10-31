@@ -2,11 +2,13 @@
 
 🏆 [Hedera - EVM Starter Bounty](https://ethglobal.com/showcase/uneedswap-v5-jn1hx">)
 
+🏆 [Zircuit - Best Zircuit Integration](https://ethglobal.com/showcase/uneedswap-v5-jn1hx)
+
 🥈 [Uniswap Foundation - Unichain 2nd place](https://ethglobal.com/showcase/uneedswap-v5-jn1hx)
 
 🥈 [Polygon - Best zk App on Polygon 2nd place](https://ethglobal.com/showcase/uneedswap-v5-jn1hx)
 
-[SKALE Network - Best Use of Zero Gas Fees 4th place](https://ethglobal.com/showcase/uneedswap-v5-jn1hx)
+4️⃣ [SKALE Network - Best Use of Zero Gas Fees 4th place](https://ethglobal.com/showcase/uneedswap-v5-jn1hx)
 
 # multiprotocol-lp
 Multi-protocol Liquidity Pools
